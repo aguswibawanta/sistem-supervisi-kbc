@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Supervisi KBC</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], },
+                    colors: {
+                        kemenag: { 50: '#f2f9f5', 100: '#e1f3e7', 500: '#10b981', 600: '#059669', 700: '#047857', 900: '#064e3b' },
+                        guru: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' }
+                    },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)', 'card': '0 2px 10px -2px rgba(0, 0, 0, 0.05)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        body { background-color: #f8fafc; color: #334155; }
+        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        .badge { @apply inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase; }
+        .badge-Hubbullah { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-Hubburrasul { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .badge-Hubbunnafs { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .badge-Hubbunnaas { background-color: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge-Hubbulbiah { background-color: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+        .badge-Hubbulwathan { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+
+        .btn-primary-kepala { @apply bg-kemenag-600 hover:bg-kemenag-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition-all duration-200 transform hover:-translate-y-0.5; }
+        .btn-primary-guru { @apply bg-guru-600 hover:bg-guru-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition-all duration-200 transform hover:-translate-y-0.5; }
+        .input-modern { @apply w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:border-transparent transition-all; }
+        .input-modern:focus { @apply shadow-sm; }
+        .input-kepala:focus { @apply focus:ring-kemenag-500; }
+        .input-guru:focus { @apply focus:ring-guru-500; }
+        
+        .card-modern { @apply bg-white p-6 rounded-2xl shadow-card border border-gray-100; }
+        .table-header { @apply bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider p-4 border-b border-gray-200; }
+        .table-cell { @apply p-4 border-b border-gray-100 text-sm text-gray-700; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-kemenag-100 selection:text-kemenag-900">
+
+    <!-- 1. HALAMAN LOGIN -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center bg-gray-50 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%2310b981\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]">
+        <div class="bg-white p-10 rounded-3xl shadow-soft w-full max-w-[420px] text-center border border-gray-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-kemenag-400 to-guru-500"></div>
+            <div class="mb-8 mt-2">
+                <div class="w-16 h-16 bg-kemenag-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-kemenag-100">
+                    <svg class="w-8 h-8 text-kemenag-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Supervisi KBC</h1>
+                <p class="text-gray-500 text-sm mt-2 font-medium">Sistem Manajemen & Evaluasi Pembelajaran</p>
+            </div>
+            <div class="space-y-4 mb-8">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                    </div>
+                    <input type="email" id="email-input" placeholder="Alamat Email" class="input-modern input-kepala pl-11 bg-gray-50" autocomplete="email">
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    </div>
+                    <input type="password" id="password-input" placeholder="Kata Sandi" class="input-modern input-kepala pl-11 bg-gray-50" autocomplete="current-password">
+                </div>
+            </div>
+            <button id="btn-login" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md transition-all duration-200 transform hover:-translate-y-0.5">Masuk ke Dasbor</button>
+        </div>
+    </div>
+
+    <!-- 2. DASBOR KEPALA MADRASAH -->
+    <div id="kepala-page" class="hidden min-h-screen bg-gray-50 flex flex-col">
+        <!-- Header -->
+        <nav class="bg-kemenag-900 text-white px-8 py-4 shadow-md flex justify-between items-center z-20 sticky top-0">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm border border-white/10">
+                    <svg class="w-6 h-6 text-kemenag-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">Manajemen Kepala Madrasah</h1>
+                    <p class="text-xs text-kemenag-200 font-medium">Sistem Supervisi Kurikulum Berbasis Cinta</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 bg-black/20 py-1.5 px-3 rounded-full border border-white/10">
+                    <div class="w-6 h-6 rounded-full bg-kemenag-500 flex items-center justify-center text-xs font-bold">KM</div>
+                    <span id="kepala-email-display" class="text-sm font-medium text-kemenag-50"></span>
+                </div>
+                <button id="btn-logout-kepala" class="bg-red-500/90 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors border border-red-400/50 flex items-center">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Keluar
+                </button>
+            </div>
+        </nav>
+
+        <!-- Navigasi Tab -->
+        <div class="glass-header border-b border-gray-200 px-6 sm:px-8 z-10 sticky top-[72px]">
+            <div class="flex space-x-2 overflow-x-auto hide-scroll pt-2">
+                <button data-target="tab-content-home" class="kepala-tab-btn px-5 py-3.5 border-b-2 font-semibold transition-all whitespace-nowrap text-kemenag-700 border-kemenag-600 bg-kemenag-50/50 rounded-t-lg flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>Beranda
+                </button>
+                <button data-target="tab-content-profil" class="kepala-tab-btn px-5 py-3.5 border-b-2 font-semibold transition-all whitespace-nowrap text-gray-500 border-transparent hover:text-kemenag-600 hover:bg-gray-50 rounded-t-lg flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>Profil Madrasah
+                </button>
+                <button data-target="tab-content-monitoring" class="kepala-tab-btn px-5 py-3.5 border-b-2 font-semibold transition-all whitespace-nowrap text-gray-500 border-transparent hover:text-kemenag-600 hover:bg-gray-50 rounded-t-lg flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>Monitoring Laporan
+                </button>
+                <button data-target="tab-content-supervisi" class="kepala-tab-btn px-5 py-3.5 border-b-2 font-semibold transition-all whitespace-nowrap text-gray-500 border-transparent hover:text-kemenag-600 hover:bg-gray-50 rounded-t-lg flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>Supervisi Akademik
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6 sm:p-8 max-w-[1400px] mx-auto w-full flex-grow">
+            <!-- TAB 1: BERANDA -->
+            <div id="tab-content-home" class="kepala-tab-content block animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card-modern">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="font-bold text-gray-800 text-lg">Distribusi Unsur KBC</h2>
+                            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">Bulan Ini</span>
+                        </div>
+                        <div class="relative h-64 flex items-center justify-center"><canvas id="kbcChart"></canvas></div>
+                    </div>
+                    <div class="card-modern bg-gradient-to-br from-kemenag-50 to-white flex flex-col justify-center items-center text-center border-kemenag-100">
+                        <div class="w-20 h-20 bg-white rounded-full shadow-sm border border-kemenag-100 flex items-center justify-center mb-5">
+                            <svg class="w-10 h-10 text-kemenag-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Sistem Terhubung</h2>
+                        <p class="text-gray-500 text-sm max-w-sm leading-relaxed">Kelola data madrasah, pantau pelaporan modul rutin guru, dan jadwalkan supervisi akademik klinis dari satu dasbor terpadu.</p>
+                        <div class="mt-6 flex space-x-3">
+                            <button onclick="document.querySelector('[data-target=\'tab-content-monitoring\']').click()" class="text-sm font-semibold text-kemenag-600 bg-white border border-kemenag-200 px-4 py-2 rounded-lg hover:bg-kemenag-50 transition shadow-sm">Lihat Monitoring</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PROFIL MADRASAH -->
+            <div id="tab-content-profil" class="kepala-tab-content hidden animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Kolom Kiri (Form) -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <!-- Card Identitas -->
+                        <div class="card-modern relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-kemenag-500"></div>
+                            <div class="flex items-center mb-5 border-b border-gray-100 pb-3">
+                                <div class="p-2 bg-kemenag-50 rounded-lg mr-3 text-kemenag-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg></div>
+                                <h2 class="font-bold text-gray-800 text-lg">Identitas Madrasah</h2>
+                            </div>
+                            <form id="form-profil-madrasah" class="space-y-4">
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Nama Instansi</label><input type="text" id="profil-nama-madrasah" class="input-modern input-kepala font-medium" required></div>
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Nama Pimpinan</label><input type="text" id="profil-nama-kepala" class="input-modern input-kepala font-medium" required></div>
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wide">Alamat Lengkap</label><textarea id="profil-alamat" class="input-modern input-kepala" rows="2" required></textarea></div>
+                                <button type="submit" class="btn-primary-kepala w-full mt-2">Simpan Perubahan</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Card Tambah Guru -->
+                        <div class="card-modern relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                            <div class="flex items-center mb-5 border-b border-gray-100 pb-3">
+                                <div class="p-2 bg-blue-50 rounded-lg mr-3 text-blue-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg></div>
+                                <h2 class="font-bold text-gray-800 text-lg">Tambah Akun Guru</h2>
+                            </div>
+                            <div class="space-y-4">
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5">Nama Lengkap & Gelar</label><input type="text" id="new-guru-nama" class="input-modern input-kepala" placeholder="Mis: Budi Santoso, S.Pd"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5">Alamat Email (Sebagai Username)</label><input type="email" id="new-guru-email" class="input-modern input-kepala" placeholder="budi@madrasah.com"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5">Kata Sandi Akses</label><input type="text" id="new-guru-pass" class="input-modern input-kepala" placeholder="Minimal 6 karakter"></div>
+                                <button id="btn-buat-guru" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition-all transform hover:-translate-y-0.5 mt-2">Daftarkan Guru</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Kanan (Tabel) -->
+                    <div class="lg:col-span-8">
+                        <div class="card-modern h-full flex flex-col">
+                            <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                                <div class="flex items-center">
+                                    <div class="p-2 bg-gray-100 rounded-lg mr-3 text-gray-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+                                    <h2 class="font-bold text-gray-800 text-lg">Direktori Guru Terdaftar</h2>
+                                </div>
+                                <span class="bg-kemenag-50 text-kemenag-700 border border-kemenag-200 px-3 py-1 rounded-md text-xs font-bold" id="total-guru-badge">0 Data</span>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-200 rounded-xl flex-grow shadow-sm">
+                                <table class="w-full text-left border-collapse">
+                                    <thead><tr class="bg-gray-50"><th class="table-header w-12 text-center">No</th><th class="table-header">Informasi Guru</th><th class="table-header text-right">Kredensial Sandi</th></tr></thead>
+                                    <tbody id="tabel-data-guru" class="divide-y divide-gray-100 bg-white">
+                                        <tr><td colspan="3" class="p-8 text-center text-gray-400 text-sm">Memuat data direktori...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MONITORING BULANAN -->
+            <div id="tab-content-monitoring" class="kepala-tab-content hidden animate-fade-in">
+                <div class="space-y-6">
+                    <!-- Matriks -->
+                    <div class="card-modern relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800 flex items-center"><svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Matriks Pengumpulan Modul (Setahun)</h2>
+                                <p class="text-sm text-gray-500 mt-1">Pantau kontinuitas penerapan nilai Panca Cinta tiap guru per bulan.</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                            <table class="w-full text-left border-collapse min-w-[1200px]">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-600 text-xs text-center uppercase tracking-wider font-bold">
+                                        <th class="p-4 border-b border-r border-gray-200 text-left sticky left-0 bg-white z-10 w-56 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Nama Tenaga Pendidik</th>
+                                        <th class="p-3 border-b border-r border-gray-200 w-24">Jul</th><th class="p-3 border-b border-r border-gray-200 w-24">Agu</th><th class="p-3 border-b border-r border-gray-200 w-24">Sep</th><th class="p-3 border-b border-r border-gray-200 w-24">Okt</th><th class="p-3 border-b border-r border-gray-200 w-24">Nov</th><th class="p-3 border-b border-r border-gray-200 w-24">Des</th>
+                                        <th class="p-3 border-b border-r border-gray-200 w-24">Jan</th><th class="p-3 border-b border-r border-gray-200 w-24">Feb</th><th class="p-3 border-b border-r border-gray-200 w-24">Mar</th><th class="p-3 border-b border-r border-gray-200 w-24">Apr</th><th class="p-3 border-b border-r border-gray-200 w-24">Mei</th><th class="p-3 border-b border-gray-200 w-24">Jun</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabel-matriks-monitoring" class="text-xs bg-white divide-y divide-gray-100">
+                                    <tr><td colspan="13" class="p-8 text-center text-gray-400">Memuat matriks...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Menunggu Catatan -->
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Perlu Tindakan: Laporan Belum Ditinjau</h2>
+                        <div id="list-menunggu-catatan" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                            <!-- Card Laporan Bulanan -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SUPERVISI AKADEMIK -->
+            <div id="tab-content-supervisi" class="kepala-tab-content hidden h-full animate-fade-in">
+                <!-- PANEL UTAMA: JADWAL & DAFTAR -->
+                <div id="panel-supervisi-utama" class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <!-- Kiri: Buat Jadwal -->
+                    <div class="xl:col-span-4 space-y-6">
+                        <div class="card-modern relative overflow-hidden bg-white">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                            <h2 class="font-bold text-gray-800 text-lg mb-5 flex items-center border-b border-gray-100 pb-3"><svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>Agendakan Supervisi</h2>
+                            <form id="form-buat-jadwal" class="space-y-4">
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5">Pilih Tenaga Pendidik</label><select id="jadwal-pilih-guru" class="input-modern input-kepala"><option value="">-- Pilih Guru --</option></select></div>
+                                <div><label class="block text-xs font-bold text-gray-500 mb-1.5">Tanggal Observasi Kelas</label><input type="date" id="jadwal-tanggal" class="input-modern input-kepala" required></div>
+                                <button type="submit" id="btn-buat-jadwal" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm transition-all mt-2">Terbitkan Jadwal</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Panel Berjalan -->
+                        <div class="card-modern border-orange-100 bg-orange-50/30">
+                            <h2 class="font-bold text-orange-800 text-md mb-4 flex items-center"><span class="w-2 h-2 rounded-full bg-orange-500 mr-2 animate-pulse"></span>Agenda Berjalan</h2>
+                            <div id="list-supervisi-aktif" class="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                                <p class="text-sm text-gray-500 italic p-4 text-center bg-white rounded-lg border border-gray-100">Tidak ada agenda aktif saat ini.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kanan: Riwayat Selesai -->
+                    <div class="xl:col-span-8">
+                        <div class="card-modern h-full flex flex-col">
+                            <h2 class="font-bold text-gray-800 text-lg mb-4 flex items-center border-b border-gray-100 pb-3"><svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Arsip Hasil Supervisi</h2>
+                            <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-sm flex-grow">
+                                <table class="w-full text-left border-collapse">
+                                    <thead><tr class="bg-gray-50"><th class="table-header">Pelaksanaan</th><th class="table-header">Fokus KBC</th><th class="table-header text-center w-24">Skor</th><th class="table-header w-24 text-center">Aksi</th></tr></thead>
+                                    <tbody id="tabel-supervisi-selesai" class="text-sm divide-y divide-gray-100 bg-white">
+                                        <tr><td colspan="4" class="p-8 text-center text-gray-400">Belum ada arsip penilaian.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL RUBRIK PENILAIAN -->
+                <div id="panel-rubrik-penilaian" class="hidden bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-200 border-t-4 border-t-indigo-600 max-w-4xl mx-auto animate-fade-in relative">
+                    <button id="btn-batal-rubrik-x" class="absolute top-6 right-6 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-5 mb-6">
+                        <div class="mb-4 md:mb-0">
+                            <h2 class="text-2xl font-extrabold text-gray-900">Instrumen Supervisi Klinis</h2>
+                            <p class="text-sm text-gray-500 mt-1 font-medium">Penilaian observasi kelas berpendekatan KBC.</p>
+                        </div>
+                        <div class="text-right bg-indigo-50 px-5 py-2.5 rounded-xl border border-indigo-100 flex items-center space-x-4 shadow-inner">
+                            <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Skor Akhir</p>
+                            <p class="text-4xl font-black text-indigo-600 leading-none" id="rubrik-skor-tampil">0</p>
+                        </div>
+                    </div>
+
+                    <form id="form-rubrik-supervisi" class="space-y-8">
+                        <input type="hidden" id="rubrik-doc-id">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/80 p-5 rounded-xl border border-gray-200">
+                            <div><p class="text-xs font-bold text-gray-500 uppercase mb-1">Objek Supervisi</p><p class="text-base font-bold text-gray-800 flex items-center"><svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg><span id="rubrik-nama-guru">-</span></p></div>
+                            <div><p class="text-xs font-bold text-gray-500 uppercase mb-1">Target Fokus Panca Cinta</p><p class="text-base font-bold text-indigo-600 flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg><span id="rubrik-fokus-kbc">-</span></p></div>
+                        </div>
+
+                        <!-- Instrumen List -->
+                        <div class="space-y-6">
+                            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                <div class="bg-gray-100 px-4 py-2.5 border-b border-gray-200"><h3 class="font-bold text-gray-700 text-sm">A. Tahap Perencanaan (Pra-Observasi)</h3></div>
+                                <div class="divide-y divide-gray-100">
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0">1. Desain pembelajaran memuat integrasi KBC secara eksplisit.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0">2. Metode selaras untuk menumbuhkan empati/cinta.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                <div class="bg-gray-100 px-4 py-2.5 border-b border-gray-200"><h3 class="font-bold text-gray-700 text-sm">B. Tahap Pelaksanaan (Observasi Kelas)</h3></div>
+                                <div class="divide-y divide-gray-100">
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0"><span class="font-bold text-gray-900">Hubbullah & Rasul:</span> Doa bermakna & kaitan materi dengan kebesaran Tuhan.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0"><span class="font-bold text-gray-900">Hubbunnafs:</span> Apresiasi positif, tanpa pelabelan negatif (No bullying).</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0"><span class="font-bold text-gray-900">Hubbunnaas:</span> Interaksi inklusif, hangat, dan kolaboratif antar peserta didik.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0"><span class="font-bold text-gray-900">Hubbulbiah:</span> Pengelolaan kelas bersih, pesan kepedulian alam.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white hover:bg-gray-50 transition">
+                                        <label class="text-sm font-medium text-gray-700 w-full sm:w-3/4 mb-2 sm:mb-0"><span class="font-bold text-gray-900">Hubbulwathan:</span> Sisipan nilai kearifan lokal / bela negara.</label>
+                                        <select class="rubrik-item p-2 border border-gray-300 rounded-lg text-sm bg-white font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" required><option value="">- Nilai (1-4) -</option><option value="1">1 - Kurang</option><option value="2">2 - Cukup</option><option value="3">3 - Baik</option><option value="4">4 - Sangat Baik</option></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coaching -->
+                        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                            <div class="bg-gray-100 px-4 py-2.5 border-b border-gray-200"><h3 class="font-bold text-gray-700 text-sm">C. Tahap Coaching (Pasca-Observasi)</h3></div>
+                            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div><label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Refleksi Pendidik (Kelebihan/Kekurangan)</label><textarea id="rubrik-refleksi" class="input-modern input-kepala" rows="3" placeholder="Diskusikan apa yang dirasakan guru..." required></textarea></div>
+                                <div><label class="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Target Tindak Lanjut Kepala</label><textarea id="rubrik-tindak-lanjut" class="input-modern input-kepala" rows="3" placeholder="Kesepakatan perbaikan ke depan..." required></textarea></div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                            <button type="submit" id="btn-simpan-rubrik" class="w-full sm:w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md transition transform hover:-translate-y-0.5 flex justify-center items-center"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Sahihkan Hasil Supervisi</button>
+                            <button type="button" id="btn-batal-rubrik" class="w-full sm:w-1/3 bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-3 rounded-xl transition">Kembali</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. DASBOR GURU -->
+    <div id="guru-page" class="hidden min-h-screen bg-gray-50 flex flex-col">
+        <nav class="bg-guru-900 text-white px-8 py-4 shadow-md flex justify-between items-center z-20 sticky top-0 border-b border-guru-800">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm border border-white/10"><svg class="w-6 h-6 text-guru-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>
+                <div><h1 class="text-lg font-bold tracking-tight">Portal Pendidik</h1><p class="text-xs text-guru-200 font-medium">Sistem Supervisi KBC</p></div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 bg-black/20 py-1.5 px-3 rounded-full border border-white/10">
+                    <div class="w-6 h-6 rounded-full bg-guru-500 flex items-center justify-center text-xs font-bold">GR</div>
+                    <span id="guru-nama-display" class="text-sm font-medium text-guru-50"></span>
+                </div>
+                <button id="btn-logout-guru" class="bg-red-500/90 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors border border-red-400/50 flex items-center"><svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Keluar</button>
+            </div>
+        </nav>
+        
+        <div class="p-6 sm:p-8 max-w-[1400px] mx-auto mt-2 grid grid-cols-1 xl:grid-cols-2 gap-8 w-full flex-grow">
+            <!-- KIRI: MONITORING BULANAN -->
+            <div class="space-y-6">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="p-2.5 bg-blue-100 text-blue-700 rounded-xl"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                    <div><h2 class="text-xl font-bold text-gray-900">Agenda Rutin (Bulanan)</h2><p class="text-xs text-gray-500 font-medium mt-0.5">Wajib unggah 1 perangkat pembelajaran tiap bulan.</p></div>
+                </div>
+                <div class="card-modern relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <form id="form-laporan-bulanan" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Bulan</label><select id="bulan-bulanan" class="input-modern input-guru font-semibold" required><option value="">- Pilih -</option><option value="Juli">Juli</option><option value="Agustus">Agustus</option><option value="September">September</option><option value="Oktober">Oktober</option><option value="November">November</option><option value="Desember">Desember</option><option value="Januari">Januari</option><option value="Februari">Februari</option><option value="Maret">Maret</option><option value="April">April</option><option value="Mei">Mei</option><option value="Juni">Juni</option></select></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Fokus Panca Cinta</label><select id="tema-bulanan" class="input-modern input-guru font-semibold" required><option value="">- Pilih Unsur -</option><option value="Hubbullah">Hubbullah</option><option value="Hubburrasul">Hubburrasul</option><option value="Hubbunnafs">Hubbunnafs</option><option value="Hubbunnaas">Hubbunnaas</option><option value="Hubbulbiah">Hubbulbiah</option><option value="Hubbulwathan">Hubbulwathan</option></select></div>
+                        </div>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:bg-gray-50 hover:border-blue-400 transition cursor-pointer group">
+                            <label for="file-bulanan" class="cursor-pointer block">
+                                <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg></div>
+                                <span class="text-sm font-bold text-blue-700 block">Pilih Dokumen RPP (PDF/Doc)</span>
+                                <input type="file" id="file-bulanan" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+                                <p id="file-name-bulanan" class="mt-2 text-xs text-gray-400 font-medium">Belum ada file dipilih</p>
+                            </label>
+                        </div>
+                        <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Refleksi Singkat</label><textarea id="refleksi-bulanan" class="input-modern input-guru" rows="2" placeholder="Bagaimana implementasinya?" required></textarea></div>
+                        <button type="submit" id="btn-submit-bulanan" class="btn-primary-guru w-full">Setor Laporan Bulanan</button>
+                    </form>
+                </div>
+                <div class="card-modern">
+                    <h2 class="font-bold text-gray-800 text-md mb-4 border-b border-gray-100 pb-2">Riwayat Laporan Saya</h2>
+                    <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead><tr class="bg-gray-50"><th class="table-header">Bulan</th><th class="table-header">Unsur</th><th class="table-header text-right">Umpan Balik</th></tr></thead>
+                            <tbody id="tabel-riwayat-bulanan" class="text-sm divide-y divide-gray-100 bg-white"><tr><td colspan="3" class="p-6 text-center text-gray-400">Belum ada data riwayat.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KANAN: SUPERVISI -->
+            <div class="space-y-6">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="p-2.5 bg-orange-100 text-orange-600 rounded-xl"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg></div>
+                    <div><h2 class="text-xl font-bold text-gray-900">Agenda Supervisi Klinis</h2><p class="text-xs text-gray-500 font-medium mt-0.5">Penjadwalan khusus dari Kepala Madrasah.</p></div>
+                </div>
+                
+                <div class="card-modern relative overflow-hidden bg-white border border-orange-100">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-bold text-gray-800 text-lg">Jadwal Aktif</h2>
+                        <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span></span>
+                    </div>
+                    <div id="panel-jadwal-aktif" class="p-4 bg-gray-50 border border-gray-100 text-gray-500 rounded-xl text-sm font-medium text-center">Tidak ada jadwal saat ini.</div>
+                    
+                    <form id="form-dokumen-supervisi" class="hidden mt-5 space-y-4 border-t border-gray-100 pt-5">
+                        <input type="hidden" id="id-jadwal-aktif">
+                        <div class="p-3 bg-orange-50 rounded-lg border border-orange-100"><p class="text-xs text-orange-800 font-bold mb-1 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Instruksi:</p><p class="text-xs text-orange-700">Unggah RPP khusus untuk keperluan observasi kelas pada tanggal di atas.</p></div>
+                        <div><label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Fokus Panca Cinta</label><select id="tema-supervisi" class="input-modern input-guru font-semibold" required><option value="">- Pilih Unsur -</option><option value="Hubbullah">Hubbullah</option><option value="Hubburrasul">Hubburrasul</option><option value="Hubbunnafs">Hubbunnafs</option><option value="Hubbunnaas">Hubbunnaas</option><option value="Hubbulbiah">Hubbulbiah</option><option value="Hubbulwathan">Hubbulwathan</option></select></div>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 hover:border-orange-400 transition cursor-pointer group">
+                            <label for="file-supervisi" class="cursor-pointer block">
+                                <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg></div>
+                                <span class="text-sm font-bold text-orange-600 block">Pilih File RPP</span>
+                                <input type="file" id="file-supervisi" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+                                <p id="file-name-supervisi" class="mt-1 text-xs text-gray-400 font-medium">Belum ada file dipilih</p>
+                            </label>
+                        </div>
+                        <button type="submit" id="btn-submit-supervisi" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-lg shadow-sm transition transform hover:-translate-y-0.5">Kirim RPP Supervisi</button>
+                    </form>
+                </div>
+
+                <div class="card-modern">
+                    <h2 class="font-bold text-gray-800 text-md mb-4 border-b border-gray-100 pb-2">Arsip Penilaian Kepala</h2>
+                    <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead><tr class="bg-gray-50"><th class="table-header w-24">Tanggal</th><th class="table-header">Unsur</th><th class="table-header text-right">Hasil Evaluasi</th></tr></thead>
+                            <tbody id="tabel-riwayat-supervisi" class="text-sm divide-y divide-gray-100 bg-white"><tr><td colspan="3" class="p-6 text-center text-gray-400">Belum ada hasil evaluasi.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE & LOGIKA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, onSnapshot, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // KREDENSIAL BAPAK
+        const firebaseConfig = { apiKey: "AIzaSyDk-OipHSQh4c_CEpmJtdmFlxJDusrAO30", authDomain: "supervisi-kbc.firebaseapp.com", projectId: "supervisi-kbc", storageBucket: "supervisi-kbc.firebasestorage.app", messagingSenderId: "545587385005", appId: "1:545587385005:web:742cd24e9d592508626c24" };
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/db1plemyo/upload"; const CLOUDINARY_UPLOAD_PRESET = "kbc_modul"; 
+
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp"); const secondaryAuth = getAuth(secondaryApp);
+
+        let currentUserData = null; const BULAN_AJARAN = ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni']; let mapGuru = {}; 
+
+        // Fungsi Global
+        window.beriCatatanBulanan = async (docId, nama, bulan) => {
+            const { value: text } = await Swal.fire({ title: `Catatan Monitoring`, html: `<p class="text-sm font-medium mb-3">${nama} (Bulan ${bulan})</p>`, input: 'textarea', inputPlaceholder: 'Tulis apresiasi atau saran...', showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#059669' });
+            if (text) { await updateDoc(doc(db, "laporan_bulanan", docId), { catatan_kepala: text, status: "Selesai" }); Swal.fire({title: 'Tersimpan!', icon: 'success', timer: 1500, showConfirmButton: false}); }
+        };
+        window.bukaRubrikSupervisi = (docId, nama, tema) => {
+            document.getElementById('panel-supervisi-utama').classList.add('hidden'); document.getElementById('panel-rubrik-penilaian').classList.remove('hidden');
+            document.getElementById('rubrik-doc-id').value = docId; document.getElementById('rubrik-nama-guru').textContent = nama; document.getElementById('rubrik-fokus-kbc').textContent = tema;
+            document.getElementById('rubrik-skor-tampil').textContent = '0'; document.getElementById('form-rubrik-supervisi').reset();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.lihatDetail = (judul, isi) => { Swal.fire({ title: judul, html: `<div class="bg-blue-50/50 p-5 rounded-xl text-left whitespace-pre-line text-sm border border-blue-100 font-medium text-gray-700 leading-relaxed shadow-inner">"${isi}"</div>`, confirmButtonColor: '#2563eb', customClass: { popup: 'rounded-2xl' } }); };
+        
+        // Logika Tab yang Diperbaiki
+        const tabBtns = document.querySelectorAll('.kepala-tab-btn'); const tabContents = document.querySelectorAll('.kepala-tab-content');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => { b.classList.remove('border-kemenag-600', 'text-kemenag-700', 'bg-kemenag-50/50'); b.classList.add('border-transparent', 'text-gray-500'); });
+                btn.classList.remove('border-transparent', 'text-gray-500'); btn.classList.add('border-kemenag-600', 'text-kemenag-700', 'bg-kemenag-50/50');
+                const tId = btn.getAttribute('data-target');
+                tabContents.forEach(c => { c.classList.add('hidden'); c.classList.remove('block'); }); 
+                document.getElementById(tId).classList.remove('hidden'); document.getElementById(tId).classList.add('block');
+            });
+        });
+
+        document.getElementById('btn-batal-rubrik').addEventListener('click', () => { document.getElementById('panel-supervisi-utama').classList.remove('hidden'); document.getElementById('panel-rubrik-penilaian').classList.add('hidden'); });
+        document.getElementById('btn-batal-rubrik-x').addEventListener('click', () => document.getElementById('btn-batal-rubrik').click());
+        
+        const rubrikItems = document.querySelectorAll('.rubrik-item');
+        rubrikItems.forEach(item => { item.addEventListener('change', () => { let total = 0; let terisi = 0; rubrikItems.forEach(sel => { if(sel.value) { total += parseInt(sel.value); terisi++; } }); let skor100 = 0; if(terisi > 0) { skor100 = Math.round((total / 28) * 100); } document.getElementById('rubrik-skor-tampil').textContent = skor100; }); });
+
+        document.getElementById('form-rubrik-supervisi').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const docId = document.getElementById('rubrik-doc-id').value; const skorAkhir = document.getElementById('rubrik-skor-tampil').textContent; const refleksi = document.getElementById('rubrik-refleksi').value; const tindakLanjut = document.getElementById('rubrik-tindak-lanjut').value;
+            let lengkap = true; rubrikItems.forEach(sel => { if(!sel.value) lengkap = false; }); if(!lengkap) return Swal.fire('Oops!', 'Mohon isi semua skala 1-4 untuk 7 indikator.', 'warning');
+            const btn = document.getElementById('btn-simpan-rubrik'); btn.disabled = true; btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menyimpan...`;
+            try {
+                const hasilGabungan = `[Refleksi Guru]:\n${refleksi} \n\n[Tindak Lanjut Kepala]:\n${tindakLanjut}`;
+                await updateDoc(doc(db, "jadwal_supervisi", docId), { nilai_kepala: skorAkhir, catatan_kepala: hasilGabungan, status: "Selesai" });
+                Swal.fire({title: 'Sukses!', text: 'Hasil supervisi disimpan.', icon: 'success', customClass: { popup: 'rounded-2xl' }});
+                document.getElementById('panel-supervisi-utama').classList.remove('hidden'); document.getElementById('panel-rubrik-penilaian').classList.add('hidden');
+            } catch(error) { Swal.fire('Error', error.message, 'error'); } finally { btn.disabled = false; btn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Sahihkan Hasil Supervisi`; }
+        });
+
+        const loginPage = document.getElementById('login-page'); const kepalaPage = document.getElementById('kepala-page'); const guruPage = document.getElementById('guru-page');
+        function showPage(p) { loginPage.classList.add('hidden'); kepalaPage.classList.add('hidden'); guruPage.classList.add('hidden'); p.classList.remove('hidden'); p.classList.add('flex'); }
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    currentUserData = userDoc.data(); currentUserData.uid = user.uid;
+                    if (currentUserData.role === 'kepala') {
+                        document.getElementById('kepala-email-display').textContent = currentUserData.nama || user.email; document.getElementById('profil-nama-kepala').value = currentUserData.nama || user.email; showPage(kepalaPage); initKepalaDashboard(); 
+                    } else {
+                        document.getElementById('guru-nama-display').textContent = currentUserData.nama || 'Guru'; showPage(guruPage); initGuruDashboard();
+                    }
+                }
+            } else { showPage(loginPage); loginPage.classList.remove('flex'); loginPage.classList.add('flex'); }
+        });
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const e = document.getElementById('email-input').value.trim(), p = document.getElementById('password-input').value;
+            if(!e || !p) return Swal.fire({icon: 'warning', text: 'Isi email dan sandi!', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
+            document.getElementById('btn-login').innerHTML = "Memproses...";
+            signInWithEmailAndPassword(auth, e, p).catch(() => { Swal.fire({icon: 'error', text: 'Kredensial ditolak', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000}); document.getElementById('btn-login').innerHTML = "Masuk ke Dasbor"; });
+        });
+        document.getElementById('btn-logout-kepala').addEventListener('click', () => signOut(auth)); document.getElementById('btn-logout-guru').addEventListener('click', () => signOut(auth));
+
+        // INIT KEPALA
+        async function initKepalaDashboard() {
+            const profilDoc = await getDoc(doc(db, "profil_madrasah", "identitas"));
+            if (profilDoc.exists()) { const p = profilDoc.data(); document.getElementById('profil-nama-madrasah').value = p.nama_madrasah || ''; document.getElementById('profil-alamat').value = p.alamat || ''; }
+
+            onSnapshot(query(collection(db, "users"), where("role", "==", "guru")), (snapshot) => {
+                const sel = document.getElementById('jadwal-pilih-guru'), tbl = document.getElementById('tabel-data-guru'); document.getElementById('total-guru-badge').textContent = `${snapshot.size} Tenaga Pendidik`;
+                sel.innerHTML = '<option value="">-- Pilih Guru --</option>'; let html = ''; let no = 1; mapGuru = {}; 
+                snapshot.forEach(doc => {
+                    const g = doc.data(); mapGuru[g.email] = { nama: g.nama, unggahan: {} }; sel.innerHTML += `<option value="${g.email}">${g.nama}</option>`;
+                    let pass = g.password ? `<span class="font-mono bg-red-50 text-red-600 px-2 py-1 rounded font-bold">${g.password}</span>` : '-';
+                    html += `<tr class="hover:bg-gray-50 transition"><td class="table-cell text-center font-medium">${no++}</td><td class="table-cell font-bold text-gray-800">${g.nama}</td><td class="table-cell text-blue-600">${g.email}</td><td class="table-cell text-right">${pass}</td></tr>`;
+                });
+                if(snapshot.empty) html = `<tr><td colspan="4" class="p-8 text-center text-gray-400">Belum ada direktori guru.</td></tr>`; tbl.innerHTML = html;
+            });
+
+            onSnapshot(query(collection(db, "laporan_bulanan"), orderBy("waktu_pengajuan", "desc")), (snapshot) => {
+                let htmlMenunggu = ''; let temaCount = { 'Hubbullah':0, 'Hubburrasul':0, 'Hubbunnafs':0, 'Hubbunnaas':0, 'Hubbulbiah':0, 'Hubbulwathan':0 };
+                for(let email in mapGuru) { mapGuru[email].unggahan = {}; } 
+                snapshot.forEach(doc => {
+                    const d = doc.data(); if(temaCount[d.tema_kbc] !== undefined) temaCount[d.tema_kbc]++;
+                    if(mapGuru[d.email_guru] && d.bulan_target) { mapGuru[d.email_guru].unggahan[d.bulan_target] = d.tema_kbc; }
+                    if (d.status === "Menunggu Catatan") {
+                        htmlMenunggu += `<div class="p-5 border border-blue-100 bg-white rounded-2xl shadow-sm hover:shadow-md transition"><div class="flex items-center space-x-3 mb-3"><div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm uppercase">${d.nama_guru.charAt(0)}</div><div><p class="font-bold text-gray-800 leading-tight">${d.nama_guru}</p><p class="text-[10px] text-gray-500 uppercase tracking-wide">Bulan ${d.bulan_target}</p></div></div><div class="mb-3"><span class="badge-${d.tema_kbc} text-[10px] mb-2 block w-fit">${d.tema_kbc}</span><p class="text-xs text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-100 line-clamp-2">"${d.refleksi_guru}"</p></div><div class="flex space-x-2 border-t border-gray-50 pt-3"><a href="${d.link_modul}" target="_blank" class="flex-1 text-center bg-white border border-gray-200 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-50 transition">File</a> <button onclick="window.beriCatatanBulanan('${doc.id}', '${d.nama_guru}', '${d.bulan_target}')" class="flex-1 bg-blue-50 text-blue-700 border border-blue-100 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition">Tinjau</button></div></div>`;
+                    }
+                });
+                document.getElementById('list-menunggu-catatan').innerHTML = htmlMenunggu || '<div class="col-span-full p-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200"><p class="text-sm text-gray-400 font-medium">Luar biasa! Semua laporan telah selesai ditinjau.</p></div>';
+                updateChart(temaCount); renderMatriksMonitoring(); 
+            });
+
+            onSnapshot(query(collection(db, "jadwal_supervisi"), orderBy("dibuat_pada", "desc")), (snapshot) => {
+                let htmlAktif = ''; let htmlSelesai = '';
+                snapshot.forEach(doc => {
+                    const d = doc.data(); 
+                    if(d.status === "Selesai") {
+                        htmlSelesai += `<tr class="hover:bg-gray-50 transition"><td class="table-cell"><p class="font-bold text-gray-800">${d.nama_guru}</p><p class="text-[10px] uppercase tracking-wide text-gray-400 mt-0.5">${d.tanggal}</p></td><td class="table-cell"><span class="badge-${d.tema_kbc} text-[10px]">${d.tema_kbc}</span></td><td class="table-cell text-center"><div class="inline-block bg-indigo-50 border border-indigo-100 text-indigo-700 font-black px-4 py-1.5 rounded-lg text-sm">${d.nilai_kepala}</div></td><td class="table-cell text-center"><button onclick="window.lihatDetail('Hasil Supervisi', '${d.catatan_kepala.replace(/\n/g, '<br>')}')" class="text-indigo-500 hover:text-indigo-700 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button></td></tr>`;
+                    } else {
+                        let isReady = d.status === "Menunggu Penilaian";
+                        let statusUI = isReady ? `<span class="bg-orange-100 text-orange-700 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">Siap Dinilai</span>` : `<span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">Menunggu Guru</span>`;
+                        let aksi = isReady ? `<div class="flex items-center space-x-2 mt-3"><a href="${d.link_modul}" target="_blank" class="text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition border border-transparent">Cek RPP</a><button onclick="window.bukaRubrikSupervisi('${doc.id}', '${d.nama_guru}', '${d.tema_kbc}')" class="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-md transition shadow-sm border border-transparent">Buka Instrumen</button></div>` : ``;
+                        
+                        htmlAktif += `
+                        <div class="bg-white border border-gray-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                            ${isReady ? '<div class="absolute left-0 top-0 w-1 h-full bg-orange-500"></div>' : ''}
+                            <div class="flex justify-between items-start">
+                                <div><p class="font-bold text-gray-800">${d.nama_guru}</p><p class="text-xs font-medium text-gray-500 mt-0.5 flex items-center"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>${d.tanggal}</p></div>
+                                ${statusUI}
+                            </div>
+                            ${aksi}
+                        </div>`;
+                    }
+                });
+                document.getElementById('list-supervisi-aktif').innerHTML = htmlAktif || '<div class="p-6 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center"><p class="text-sm text-gray-400 font-medium">Tidak ada antrean jadwal aktif.</p></div>';
+                document.getElementById('tabel-supervisi-selesai').innerHTML = htmlSelesai || '<tr><td colspan="4" class="p-8 text-center text-gray-400">Belum ada arsip penilaian.</td></tr>';
+            });
+        }
+
+        function renderMatriksMonitoring() {
+            const tbody = document.getElementById('tabel-matriks-monitoring'); let html = ''; if (Object.keys(mapGuru).length === 0) return;
+            for (let email in mapGuru) {
+                const guru = mapGuru[email]; html += `<tr class="hover:bg-blue-50/30 transition"><td class="p-4 border-b border-r border-gray-100 font-semibold text-gray-700 sticky left-0 bg-white z-10 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">${guru.nama}</td>`;
+                BULAN_AJARAN.forEach(b => { const u = guru.unggahan[b]; if (u) { html += `<td class="p-2 border-b border-r border-gray-100 text-center align-middle"><div class="inline-flex flex-col items-center justify-center w-full py-1.5 rounded bg-white shadow-sm border text-[9px] font-bold uppercase tracking-wider badge-${u}"><svg class="w-3.5 h-3.5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>${u.replace('Hubbu', 'H.')}</div></td>`; } else { html += `<td class="p-3 border-b border-r border-gray-100 text-center text-gray-200 font-bold">-</td>`; } }); html += `</tr>`;
+            } tbody.innerHTML = html;
+        }
+
+        document.getElementById('form-profil-madrasah').addEventListener('submit', async (e) => { e.preventDefault(); await setDoc(doc(db, "profil_madrasah", "identitas"), { nama_madrasah: document.getElementById('profil-nama-madrasah').value, nama_kepala: document.getElementById('profil-nama-kepala').value, alamat: document.getElementById('profil-alamat').value }, { merge: true }); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Tersimpan', showConfirmButton: false, timer: 2000}); });
+        document.getElementById('btn-buat-guru').addEventListener('click', async () => { const n = document.getElementById('new-guru-nama').value.trim(), e = document.getElementById('new-guru-email').value.trim(), p = document.getElementById('new-guru-pass').value; if(!n || !e || !p) return Swal.fire('Error', 'Lengkapi form!', 'warning'); const btn = document.getElementById('btn-buat-guru'); btn.disabled = true; try { const cred = await createUserWithEmailAndPassword(secondaryAuth, e, p); await setDoc(doc(db, "users", cred.user.uid), { nama: n, email: e, password: p, role: "guru" }); await signOut(secondaryAuth); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Guru ditambahkan', showConfirmButton: false, timer: 2000}); document.getElementById('new-guru-nama').value=''; document.getElementById('new-guru-email').value=''; document.getElementById('new-guru-pass').value=''; } catch (err) { Swal.fire('Gagal', err.message, 'error'); } finally { btn.disabled = false; } });
+        document.getElementById('btn-buat-jadwal').addEventListener('click', async (e) => { e.preventDefault(); const em = document.getElementById('jadwal-pilih-guru').value, t = document.getElementById('jadwal-tanggal').value; if(!em || !t) return Swal.fire('Error', 'Lengkapi pilihan!', 'warning'); await addDoc(collection(db, "jadwal_supervisi"), { email_guru: em, nama_guru: mapGuru[em].nama, tanggal: t, status: "Menunggu Dokumen", dibuat_pada: serverTimestamp() }); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'Jadwal terkirim', showConfirmButton: false, timer: 2000}); document.getElementById('jadwal-tanggal').value=''; });
+
+        // ==========================================
+        // INIT GURU
+        // ==========================================
+        function initGuruDashboard() {
+            onSnapshot(query(collection(db, "laporan_bulanan"), where("email_guru", "==", currentUserData.email), orderBy("waktu_pengajuan", "desc")), (snap) => {
+                const tb = document.getElementById('tabel-riwayat-bulanan'); let h = ''; if (snap.empty) { tb.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-400">Belum ada riwayat laporan.</td></tr>`; return; }
+                snap.forEach(d => {
+                    const v = d.data(); 
+                    let btnAction = v.status === "Selesai" ? `<button onclick="window.lihatDetail('Umpan Balik Kepala', '${v.catatan_kepala.replace(/\n/g, '<br>')}')" class="text-guru-600 font-bold hover:text-guru-800 text-xs bg-guru-50 hover:bg-guru-100 px-3 py-1.5 rounded-md transition flex items-center justify-end w-max ml-auto"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>Baca</button>` : `<span class="text-gray-400 text-[10px] font-semibold uppercase tracking-wider flex justify-end">Menunggu</span>`;
+                    h += `<tr class="hover:bg-gray-50 transition"><td class="table-cell font-bold text-gray-700">${v.bulan_target}</td><td class="table-cell"><span class="badge-${v.tema_kbc} text-[10px]">${v.tema_kbc}</span></td><td class="table-cell">${btnAction}</td></tr>`;
+                }); tb.innerHTML = h;
+            });
+
+            onSnapshot(query(collection(db, "jadwal_supervisi"), where("email_guru", "==", currentUserData.email), orderBy("dibuat_pada", "desc")), (snap) => {
+                const pnl = document.getElementById('panel-jadwal-aktif'); const formSup = document.getElementById('form-dokumen-supervisi'); const tbSup = document.getElementById('tabel-riwayat-supervisi'); let hSelesai = ''; let hasActive = false;
+                snap.forEach(docSnap => {
+                    const v = docSnap.data();
+                    if(v.status === "Selesai") {
+                        hSelesai += `<tr class="hover:bg-gray-50 transition"><td class="table-cell font-semibold text-gray-700">${v.tanggal}</td><td class="table-cell"><span class="badge-${v.tema_kbc} text-[10px]">${v.tema_kbc}</span></td><td class="table-cell text-right"><button onclick="window.lihatDetail('Hasil Evaluasi', 'Skor Akhir: <b>${v.nilai_kepala}</b><br><br>${v.catatan_kepala.replace(/\n/g, '<br>')}')" class="bg-orange-50 text-orange-600 font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-orange-100 transition shadow-sm border border-orange-100">Buka Detail</button></td></tr>`;
+                    } else {
+                        if(!hasActive) { 
+                            hasActive = true;
+                            if(v.status === "Menunggu Dokumen") { pnl.innerHTML = `<p class="text-xs text-orange-600 uppercase font-bold tracking-wide mb-1">Jadwal Observasi Anda</p><strong class="text-xl text-gray-800 flex items-center"><svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>${v.tanggal}</strong>`; pnl.className = "p-5 bg-white border border-orange-200 text-gray-800 rounded-xl shadow-sm relative"; formSup.classList.remove('hidden'); document.getElementById('id-jadwal-aktif').value = docSnap.id; } 
+                            else if(v.status === "Menunggu Penilaian") { pnl.innerHTML = `<div class="flex items-center text-green-600 mb-2"><svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="font-bold">RPP Terkirim</span></div><p class="text-xs text-gray-600 font-medium">Jadwal: ${v.tanggal}. Saat ini menunggu penilaian dari Kepala Madrasah paska observasi.</p>`; pnl.className = "p-5 bg-green-50 border border-green-100 text-gray-800 rounded-xl shadow-sm"; formSup.classList.add('hidden'); }
+                        }
+                    }
+                });
+                if(!hasActive) { pnl.innerHTML = "Belum ada agenda supervisi dari pimpinan."; pnl.className = "p-5 bg-gray-50 border border-gray-100 text-gray-500 rounded-xl text-sm font-medium text-center"; formSup.classList.add('hidden'); }
+                tbSup.innerHTML = hSelesai || `<tr><td colspan="3" class="p-6 text-center text-gray-400">Belum ada arsip evaluasi.</td></tr>`;
+            });
+        }
+
+        document.getElementById('file-bulanan').addEventListener('change', (e) => { const el = document.getElementById('file-name-bulanan'); el.textContent = e.target.files[0] ? e.target.files[0].name : "Belum ada file dipilih"; if(e.target.files[0]) el.classList.add('text-blue-600', 'font-bold'); else el.classList.remove('text-blue-600', 'font-bold'); }); 
+        document.getElementById('file-supervisi').addEventListener('change', (e) => { const el = document.getElementById('file-name-supervisi'); el.textContent = e.target.files[0] ? e.target.files[0].name : "Belum ada file dipilih"; if(e.target.files[0]) el.classList.add('text-orange-600', 'font-bold'); else el.classList.remove('text-orange-600', 'font-bold'); });
+        async function uploadFileToCloudinary(fileObj) { const formData = new FormData(); formData.append('file', fileObj); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData }); const data = await response.json(); if(!response.ok) throw new Error(data.error.message || "Gagal upload"); return data.secure_url; }
+
+        document.getElementById('form-laporan-bulanan').addEventListener('submit', async (e) => {
+            e.preventDefault(); const file = document.getElementById('file-bulanan').files[0]; if(!file) return Swal.fire('Error', 'Pilih file PDF/Doc!', 'warning');
+            const btn = document.getElementById('btn-submit-bulanan'); btn.disabled = true; btn.innerHTML = "Mengunggah...";
+            try { const url = await uploadFileToCloudinary(file); await addDoc(collection(db, "laporan_bulanan"), { email_guru: currentUserData.email, nama_guru: currentUserData.nama || 'Guru', bulan_target: document.getElementById('bulan-bulanan').value, tema_kbc: document.getElementById('tema-bulanan').value, link_modul: url, refleksi_guru: document.getElementById('refleksi-bulanan').value, catatan_kepala: "", status: "Menunggu Catatan", waktu_pengajuan: serverTimestamp() }); Swal.fire({title: 'Sukses', text: 'Laporan terkirim', icon: 'success', timer: 2000, showConfirmButton: false}); e.target.reset(); document.getElementById('file-name-bulanan').textContent = "Belum ada file"; document.getElementById('file-name-bulanan').classList.remove('text-blue-600', 'font-bold'); } catch (err) { Swal.fire('Gagal', err.message, 'error'); } finally { btn.disabled = false; btn.innerHTML = "Setor Laporan Bulanan"; }
+        });
+
+        document.getElementById('form-dokumen-supervisi').addEventListener('submit', async (e) => {
+            e.preventDefault(); const file = document.getElementById('file-supervisi').files[0]; if(!file) return Swal.fire('Error', 'Pilih file PDF/Doc!', 'warning');
+            const btn = document.getElementById('btn-submit-supervisi'); btn.disabled = true; btn.innerHTML = "Mengunggah..."; const docId = document.getElementById('id-jadwal-aktif').value;
+            try { const url = await uploadFileToCloudinary(file); await updateDoc(doc(db, "jadwal_supervisi", docId), { tema_kbc: document.getElementById('tema-supervisi').value, link_modul: url, status: "Menunggu Penilaian", waktu_upload: serverTimestamp() }); Swal.fire({title: 'Sukses', text: 'RPP terkirim', icon: 'success', timer: 2000, showConfirmButton: false}); e.target.reset(); document.getElementById('file-name-supervisi').textContent = "Belum ada file"; document.getElementById('file-name-supervisi').classList.remove('text-orange-600', 'font-bold'); } catch (err) { Swal.fire('Gagal', err.message, 'error'); } finally { btn.disabled = false; btn.innerHTML = "Kirim RPP Supervisi"; }
+        });
+
+        let myDoughnutChart; function updateChart(c) {
+            const el = document.getElementById('kbcChart'); if(!el) return; const ctx = el.getContext('2d'); if(myDoughnutChart) myDoughnutChart.destroy();
+            myDoughnutChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Hubbunnaas', 'Hubbulbiah', 'Hubbullah', 'Hubburrasul', 'Hubbunnafs', 'Hubbulwathan'], datasets: [{ data: [c.Hubbunnaas, c.Hubbulbiah, c.Hubbullah, c.Hubburrasul, c.Hubbunnafs, c.Hubbulwathan], backgroundColor: ['#1d4ed8', '#047857', '#b45309', '#6b21a8', '#b91c1c', '#c2410c'], borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { family: "'Inter', sans-serif", size: 11 } } }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8, titleFont: { family: "'Inter', sans-serif" }, bodyFont: { family: "'Inter', sans-serif" } } }, cutout: '75%', animation: { animateScale: true } } });
+        }
+    </script>
+</body>
+</html>
